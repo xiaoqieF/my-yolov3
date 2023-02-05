@@ -21,7 +21,7 @@ class BoxDecoder():
             stride = HYP.input_shape / h
 
             # [bs, 3, h, w, class_num + 5]
-            prediction = prediction.view(b, len(HYP.anchor[i]), -1, w, h)\
+            prediction = prediction.view(b, len(HYP.anchor[i]), -1, h, w)\
                 .permute(0, 1, 3, 4, 2).contiguous()
             # tx, ty, conf 以及每个类别的参数都需要做 sigmoid 操作
             prediction[..., [0, 1, 4]] = prediction[..., [0, 1, 4]].sigmoid()
@@ -37,8 +37,8 @@ class BoxDecoder():
         """
         构建每个预测层的 anchor grid, 
         Return:
-            grids(List[Tensor[bs, 3, h, w, 4]]), 每层每个像素有 3 个 anchor, 每个 anchor 的
-            4 个参数分别为 grid_x, grid_y, anchor_h, anchor_w, 配合网络预测的调整参数 tx, ty, tw, th
+            grids(List[Tensor[bs, 3, w, h, 4]]), 每层每个像素有 3 个 anchor, 每个 anchor 的
+            4 个参数分别为 grid_x, grid_y, anchor_w, anchor_h, 配合网络预测的调整参数 tx, ty, tw, th
             得到最终的预测框， 计算方法就是论文的公式：
                                 bx = sigmoid(tx) + grid_x
                                 by = sigmoid(ty) + grid_y
@@ -56,7 +56,7 @@ class BoxDecoder():
             gridY, gridX = torch.meshgrid(torch.arange(h), torch.arange(w), indexing="ij")
             grid[..., 0] *= gridX.to(device).unsqueeze(0)   # x
             grid[..., 1] *= gridY.to(device).unsqueeze(0)   # y
-            grid[..., 2] *= anchor_scaled[:, 0].view(1, len(HYP.anchor[i]), 1, 1)  # h
-            grid[..., 3] *= anchor_scaled[:, 1].view(1, len(HYP.anchor[i]), 1, 1)  # w
+            grid[..., 2] *= anchor_scaled[:, 0].view(1, len(HYP.anchor[i]), 1, 1)  # w
+            grid[..., 3] *= anchor_scaled[:, 1].view(1, len(HYP.anchor[i]), 1, 1)  # h
             grids.append(grid)
         return grids

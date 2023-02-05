@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     device = torch.device("cuda:0")
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
-    model.load_state_dict(torch.load("yolo_10.pth"))
+    model.load_state_dict(torch.load("yolo_53.pth"))
     model.to(device)
     model.eval()
 
@@ -30,7 +30,8 @@ if __name__ == '__main__':
             outputs = decoder.decode(outputs)
             predictions = non_max_suppression(outputs)[0]
             predictions = predictions.cpu()
-            print(predictions)
+            print(f"predictions: {predictions}")
+            print(f"targets: {targets}")
             img = draw_objs(torchvision.transforms.ToPILImage()(imgs.squeeze(0)), predictions[:, :4], predictions[:, 4])
             plt.imshow(img)
             plt.show()

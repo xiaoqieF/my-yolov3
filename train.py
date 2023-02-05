@@ -20,7 +20,6 @@ def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
     return optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=f)
 
 def train_one_epoch(model, epoch, train_loader, optimizer, device, warm_up=False):
-    decoder = BoxDecoder()
     model.to(device)
     model.train()
 
@@ -52,17 +51,17 @@ if __name__ == '__main__':
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
 
     train_data = YoloDataset('./my_yolo_dataset', isTrain=True, transform=DEFAULT_TRANSFORMS)
-    train_dataloader = DataLoader(train_data, 4, True, num_workers=4, collate_fn=train_data.collate_fn)
+    train_dataloader = DataLoader(train_data, 16, True, num_workers=4, collate_fn=train_data.collate_fn)
 
     val_data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=DEFAULT_TRANSFORMS)
     val_dataloader = DataLoader(val_data, batch_size=1, shuffle=False, num_workers=4, collate_fn=val_data.collate_fn)
 
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.001,
+    optimizer = torch.optim.SGD(params, lr=0.01,
                                 momentum=0.9, weight_decay=0.0005)
 
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                   step_size=5,
+                                                   step_size=2,
                                                    gamma=0.5)
     for epoch in range(60):
         train_one_epoch(model, epoch, train_dataloader, optimizer, device=torch.device("cuda:0"), warm_up=True)
