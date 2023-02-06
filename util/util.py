@@ -12,7 +12,7 @@ def xywh2xyxy(x):
     y[..., 3] = x[..., 1] + x[..., 3] / 2
     return y
 
-def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=None):
+def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45):
     """Performs Non-Maximum Suppression (NMS) on inference results
     Args:
         prediction[Tensor[bs, -1, 5 + num_class]]
@@ -28,7 +28,6 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
     max_det = 300  # maximum number of detections per image
     max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
     time_limit = 1.0  # seconds to quit after
-    multi_label = nc > 1  # multiple labels per box (adds 0.5ms/img)
 
     t = time.time()
     output = [torch.zeros((0, 6), device=prediction.device)] * prediction.shape[0]
@@ -49,16 +48,8 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
         box = xywh2xyxy(x[:, :4])
 
         # Detections matrix nx6 (xyxy, conf, cls)
-        if multi_label:
-            i, j = (x[:, 5:] > conf_thres).nonzero(as_tuple=False).T
-            x = torch.cat((box[i], x[i, j + 5, None], j[:, None].float()), 1)
-        else:  # best class only
-            conf, j = x[:, 5:].max(1, keepdim=True)
-            x = torch.cat((box, conf, j.float()), 1)[conf.view(-1) > conf_thres]
-
-        # Filter by class
-        if classes is not None:
-            x = x[(x[:, 5:6] == torch.tensor(classes, device=x.device)).any(1)]
+        conf, j = x[:, 5:].max(1, keepdim=True)
+        x = torch.cat((box, conf, j.float()), 1)[conf.view(-1) > conf_thres]
 
         # Check shape
         n = x.shape[0]  # number of boxes
@@ -117,6 +108,25 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
     iou = inter_area / (b1_area + b2_area - inter_area + 1e-16)
 
     return iou
+
+def box_iou(box1, box2):
+    """用于计算混淆矩阵
+    https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
+    :params box1: (Tensor[N, 4])  [N, x1y1x2y2]
+    :params box2: (Tensor[M, 4])  [M, x1y1x2y2]
+    :return box1和box2的iou [N, M]
+    """
+    def box_area(box):
+        # 求出box的面积
+        return (box[2] - box[0]) * (box[3] - box[1])
+
+    area1 = box_area(box1.T)   # box1面积
+    area2 = box_area(box2.T)   # box2面积
+
+    # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
+    # 等价于(torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1)).clamp(0) * (torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1)).clamp(0)
+    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+    return inter / (area1[:, None] + area2 + 1e-16 - inter)  # iou = inter / (area1 + area2 - inter)
 
 def load_classes(path):
     """
