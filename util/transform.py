@@ -96,7 +96,7 @@ class DefaultAug(ImgAug):
 
 DEFAULT_TRANSFORMS = transforms.Compose([
     AbsoluteLabels(),
-    DefaultAug(),
+    # DefaultAug(),
     PadSquare(),
     RelativeLabels(),
     ToTensor(),

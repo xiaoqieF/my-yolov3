@@ -127,7 +127,7 @@ def _evaluate(model, dataloader, class_names, img_size, iou_thres, conf_thres, n
 
 if __name__ == '__main__':
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
-    # model.load_state_dict(torch.load("yolo_weights.pth"))
+    model.load_state_dict(torch.load("yolo_10.pth"))
     model.to(torch.device("cuda:0"))
 
     data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=DEFAULT_TRANSFORMS)
