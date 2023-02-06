@@ -4,7 +4,7 @@ from torch import nn, optim
 import torch
 from torch.utils.data import DataLoader
 from util.hyp import HYP
-from util.transform import DEFAULT_TRANSFORMS
+from util.transform import DEFAULT_TRANSFORMS, VAL_TRANSFORMS
 from util.dataset import YoloDataset
 from util.util import non_max_suppression
 from util.boxes import BoxDecoder
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load("best_epoch_weights.pth"))
     model.to(torch.device("cuda:0"))
 
-    data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=DEFAULT_TRANSFORMS)
+    data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
     dataloader = DataLoader(data, 1, False, num_workers=4, collate_fn=data.collate_fn)
 
     precision, recall, AP, f1, ap_class = evaluate_model_file(model, dataloader)

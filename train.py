@@ -4,7 +4,7 @@ from torch import nn, optim
 import torch
 from torch.utils.data import DataLoader
 from util.hyp import HYP
-from util.transform import DEFAULT_TRANSFORMS
+from util.transform import DEFAULT_TRANSFORMS, VAL_TRANSFORMS
 from util.dataset import YoloDataset
 from util.util import non_max_suppression
 from util.boxes import BoxDecoder
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     train_data = YoloDataset('./my_yolo_dataset', isTrain=True, transform=DEFAULT_TRANSFORMS)
     train_dataloader = DataLoader(train_data, 32, True, num_workers=4, collate_fn=train_data.collate_fn)
 
-    val_data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=DEFAULT_TRANSFORMS)
+    val_data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
     val_dataloader = DataLoader(val_data, batch_size=1, shuffle=False, num_workers=4, collate_fn=val_data.collate_fn)
 
     init_epoch = 10
