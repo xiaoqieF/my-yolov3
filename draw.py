@@ -5,7 +5,7 @@ from networks.yolov3 import YOLOBody
 from util.hyp import HYP
 import torch
 from torch.utils.data import DataLoader
-from util.transform import DEFAULT_TRANSFORMS
+from util.transform import DEFAULT_TRANSFORMS, VAL_TRANSFORMS
 from util.draw_boxes_utils import draw_objs
 import torchvision
 import matplotlib.pyplot as plt
@@ -14,11 +14,11 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     device = torch.device("cuda:0")
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
-    model.load_state_dict(torch.load("best_epoch_weights.pth"))
+    model.load_state_dict(torch.load("yolo_119.pth"))
     model.to(device)
     model.eval()
 
-    data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=DEFAULT_TRANSFORMS)
+    data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
     dataloader = DataLoader(data, 1, True, num_workers=4, collate_fn=data.collate_fn)
     decoder = BoxDecoder()
     with torch.no_grad():

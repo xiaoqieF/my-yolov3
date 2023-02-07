@@ -56,7 +56,7 @@ if __name__ == '__main__':
     val_data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
     val_dataloader = DataLoader(val_data, batch_size=1, shuffle=False, num_workers=4, collate_fn=val_data.collate_fn)
 
-    init_epoch = 10
+    init_epoch = 20
 
     for param in model.backbone.parameters():
         param.requires_grad = False
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.SGD(params, lr=0.01,
                                 momentum=0.9, weight_decay=0.0005)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                   step_size=3,
+                                                   step_size=5,
                                                    gamma=0.9)
 
     for epoch in range(init_epoch):
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         param.requires_grad = True
 
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.008,
+    optimizer = torch.optim.SGD(params, lr=0.006,
                                 momentum=0.9, weight_decay=0.0005)
 
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
@@ -86,5 +86,5 @@ if __name__ == '__main__':
     for epoch in range(init_epoch, init_epoch + 100, 1):
         train_one_epoch(model, epoch, train_dataloader, optimizer, device=torch.device("cuda:0"), warm_up=True)
         lr_scheduler.step()
-        if epoch > 15 and epoch % 2 == 0:
+        if epoch > 15 and epoch % 4 == 0:
             evaluate_model_file(model, val_dataloader)

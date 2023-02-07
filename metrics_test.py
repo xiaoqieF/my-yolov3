@@ -70,7 +70,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0")
 
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
-    model.load_state_dict(torch.load("best_epoch_weights.pth"))
+    model.load_state_dict(torch.load("yolo_119.pth"))
     model.to(device)
 
     data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
@@ -95,7 +95,7 @@ if __name__ == '__main__':
             outputs = model(imgs)
             outputs = [o.cpu() for o in outputs]
             outputs = decoder.decode(outputs)
-            outputs = non_max_suppression(outputs, conf_thres=0.05, iou_thres=0.5)
+            outputs = non_max_suppression(outputs, conf_thres=0.1, iou_thres=0.5)
 
         for si, pred in enumerate(outputs):
             labels = targets[targets[:, 0] == si, 1:]
@@ -143,7 +143,7 @@ if __name__ == '__main__':
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
     stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy   
     
-    p, r, ap, f1, ap_class = ap_per_class(*stats, names=class_names)
+    tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, names=class_names)
     ap50, ap = ap[:, 0], ap.mean(1)
         # mp: [1] 所有类别的平均precision(最大f1时)
         # mr: [1] 所有类别的平均recall(最大f1时)

@@ -49,7 +49,7 @@ def evaluate_model_file(model, dataloader):
         class_names,
         416,
         0.5,
-        0.25,
+        0.1,
         0.5,
         True)
     return metrics_output
@@ -106,7 +106,7 @@ def _evaluate(model, dataloader, class_names, img_size, iou_thres, conf_thres, n
         with torch.no_grad():
             outputs = model(imgs)
             outputs = decoder.decode(outputs)
-            outputs = non_max_suppression(outputs, conf_thres=conf_thres, iou_thres=nms_thres)
+            outputs =non_max_suppression(outputs, conf_thres=conf_thres, iou_thres=nms_thres)
 
         sample_metrics += get_batch_statistics(outputs, targets, iou_threshold=iou_thres)
 
@@ -127,7 +127,7 @@ def _evaluate(model, dataloader, class_names, img_size, iou_thres, conf_thres, n
 
 if __name__ == '__main__':
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
-    model.load_state_dict(torch.load("best_epoch_weights.pth"))
+    model.load_state_dict(torch.load("yolo_119.pth"))
     model.to(torch.device("cuda:0"))
 
     data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)

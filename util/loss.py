@@ -105,7 +105,7 @@ def compute_loss(predictions, targets):
         # Calculate the BCE loss between the on the fly generated target and the network prediction
         lobj += BCEobj(layer_predictions[..., 4], tobj) # obj loss
 
-    lbox *= 0.05
+    lbox *= 0.1
     lobj *= 1.0
     lcls *= 0.5
 
