@@ -72,6 +72,7 @@ if __name__ == '__main__':
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
     model.load_state_dict(torch.load("yolo_119.pth"))
     model.to(device)
+    model.eval()
 
     data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
     dataloader = DataLoader(data, batch_size=1, shuffle=False, num_workers=1, collate_fn=data.collate_fn)

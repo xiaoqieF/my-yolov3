@@ -14,12 +14,12 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     device = torch.device("cuda:0")
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
-    model.load_state_dict(torch.load("yolo_119.pth"))
+    model.load_state_dict(torch.load("best_epoch_weights.pth"))
     model.to(device)
     model.eval()
 
     data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
-    dataloader = DataLoader(data, 1, True, num_workers=4, collate_fn=data.collate_fn)
+    dataloader = DataLoader(data, 1, False, num_workers=4, collate_fn=data.collate_fn)
     decoder = BoxDecoder()
     with torch.no_grad():
         for imgs, targets in dataloader:

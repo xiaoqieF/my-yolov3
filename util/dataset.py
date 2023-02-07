@@ -14,6 +14,7 @@ class YoloDataset(Dataset):
         else:
             self.images_root = os.path.join(data_root, "val", "images")
         self.image_paths = [os.path.join(self.images_root, image_name) for image_name in os.listdir(self.images_root)] 
+        self.image_paths.sort()
         self.annotations_paths = []
         for image_path in self.image_paths:
             image_name = os.path.split(image_path)[-1]

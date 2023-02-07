@@ -90,8 +90,6 @@ def _evaluate(model, dataloader, class_names, img_size, iou_thres, conf_thres, n
     model.eval()  # Set model to evaluation mode
     decoder = BoxDecoder()
 
-    Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
-
     labels = []
     sample_metrics = []  # List of tuples (TP, confs, pred)
     for imgs, targets in tqdm.tqdm(dataloader, desc="Validating"):
@@ -127,7 +125,7 @@ def _evaluate(model, dataloader, class_names, img_size, iou_thres, conf_thres, n
 
 if __name__ == '__main__':
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
-    model.load_state_dict(torch.load("yolo_119.pth"))
+    model.load_state_dict(torch.load("best_epoch_weights.pth"))
     model.to(torch.device("cuda:0"))
 
     data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
