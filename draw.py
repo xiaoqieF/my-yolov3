@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     device = torch.device("cuda:0")
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
-    model.load_state_dict(torch.load("best_epoch_weights.pth"))
+    model.load_state_dict(torch.load("yolo_120.pth"))
     model.to(device)
     model.eval()
 

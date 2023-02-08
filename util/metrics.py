@@ -1,6 +1,69 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
+import torch
+from terminaltables import AsciiTable
+
+from .util import box_iou
+
+def print_eval_stats(ap, ap_class, class_names):
+    ap50 = ap[:, 0]
+    # Prints class AP and mean AP
+    ap_table = [["Index", "Class", "AP"]]
+    for i, c in enumerate(ap_class):
+        ap_table += [[c, class_names[c], "%.5f" % ap50[i]]]
+    print(AsciiTable(ap_table).table)
+    print(f"---- mAP {ap50.mean():.5f} ----")
+
+def get_batch_statistics(outputs, targets):
+    iouv = torch.linspace(0.5, 0.95, 10)
+    niou = iouv.numel()
+
+    stats = []
+
+    for si, pred in enumerate(outputs):
+        labels = targets[targets[:, 0] == si, 1:]
+        nl = len(labels)
+        tcls = labels[:, 0].tolist() if nl else []
+
+        if len(pred) == 0:
+            if nl:
+                stats.append((torch.zeros(0, niou, dtype=torch.bool), torch.Tensor(), torch.Tensor(), tcls))
+            continue
+        correct = torch.zeros(pred.shape[0], niou, dtype=torch.bool)
+        if nl:
+            detected = []
+            tcls_tensor = labels[:, 0]
+            tbox = labels[:, 1:5]
+
+            for cls in torch.unique(tcls_tensor):
+                ti = (cls == tcls_tensor).nonzero(as_tuple=False).view(-1)
+                pi = (cls == pred[:, 5]).nonzero(as_tuple=False).view(-1)
+
+                # Search for detections
+                if pi.shape[0]:
+                    # Prediction to target ious
+                    # predn[pi, :4]: 属于该类的预测框[144, 4]  tbox[ti]: 属于该类的gt框[13, 4]
+                    # box_iou: [144, 4] + [13, 4] => [144, 13]  计算属于该类的预测框与属于该类的gt框的iou
+                    # .max(1): [144] 选出每个预测框与所有gt box中最大的iou值, i为最大iou值时对应的gt索引
+                    ious, i = box_iou(pred[pi, :4], tbox[ti]).max(1)  # best ious, indices
+
+                    # Append detections
+                    detected_set = set()  # 这个参数好像没什么用
+                    for j in (ious > iouv[0]).nonzero(as_tuple=False):  # j: ious中>0.5的索引 只有iou>=0.5才是TP
+                        # 获得检测到的目标
+                        d = ti[i[j]]  # detected target
+                        if d.item() not in detected_set:
+                            detected_set.add(d.item())  # 没什么用
+                            detected.append(d) # 将当前检测到的gt框d添加到detected()
+                            # iouv为以0.05为步长  0.5-0.95的序列
+                            # 从所有TP中获取不同iou阈值下的TP true positive  并在correct中记录下哪个预测框是哪个iou阈值下的TP
+                            # correct: [pred_num, 10] = [300, 10]  记录着哪个预测框在哪个iou阈值下是TP
+                            correct[pi[j]] = ious[j] > iouv  # iou_thres is 1xn
+                            if len(detected) == nl:  # 如果检测到的目标值等于gt框的个数 就结束
+                                break
+        stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
+    return stats
 
 def smooth(y, f=0.05):
     # Box filter of fraction f

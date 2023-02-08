@@ -6,9 +6,7 @@ from torch.utils.data import DataLoader
 from util.hyp import HYP
 from util.transform import DEFAULT_TRANSFORMS, VAL_TRANSFORMS
 from util.dataset import YoloDataset
-from util.util import non_max_suppression
-from util.boxes import BoxDecoder
-from val import evaluate_model_file
+from val import evaluate
 
 
 def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
@@ -62,7 +60,7 @@ if __name__ == '__main__':
         param.requires_grad = False
 
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.01,
+    optimizer = torch.optim.SGD(params, lr=0.02,
                                 momentum=0.9, weight_decay=0.0005)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=5,
@@ -76,15 +74,15 @@ if __name__ == '__main__':
         param.requires_grad = True
 
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.006,
+    optimizer = torch.optim.SGD(params, lr=0.01,
                                 momentum=0.9, weight_decay=0.0005)
 
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.9)
 
-    for epoch in range(init_epoch, init_epoch + 100, 1):
+    for epoch in range(init_epoch, init_epoch + 140, 1):
         train_one_epoch(model, epoch, train_dataloader, optimizer, device=torch.device("cuda:0"), warm_up=True)
         lr_scheduler.step()
         if epoch > 15 and epoch % 4 == 0:
-            evaluate_model_file(model, val_dataloader)
+            evaluate(model, val_dataloader)
