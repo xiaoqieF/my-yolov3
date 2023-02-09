@@ -47,6 +47,7 @@ def train_one_epoch(model, epoch, train_loader, optimizer, device, warm_up=False
 
 if __name__ == '__main__':
     model = YOLOBody(HYP.anchorIndex, 20, pretrained=True)
+    device = torch.device("cuda:0")
 
     train_data = YoloDataset('./my_yolo_dataset', isTrain=True, transform=DEFAULT_TRANSFORMS)
     train_dataloader = DataLoader(train_data, 32, True, num_workers=4, collate_fn=train_data.collate_fn)
@@ -67,8 +68,9 @@ if __name__ == '__main__':
                                                    gamma=0.9)
 
     for epoch in range(init_epoch):
-        train_one_epoch(model, epoch, train_dataloader, optimizer, device=torch.device("cuda:0"), warm_up=True)
+        train_one_epoch(model, epoch, train_dataloader, optimizer, device=device, warm_up=True)
         lr_scheduler.step()
+        evaluate(model, val_dataloader, device)
     
     for param in model.backbone.parameters():
         param.requires_grad = True
@@ -81,8 +83,8 @@ if __name__ == '__main__':
                                                    step_size=3,
                                                    gamma=0.9)
 
-    for epoch in range(init_epoch, init_epoch + 140, 1):
-        train_one_epoch(model, epoch, train_dataloader, optimizer, device=torch.device("cuda:0"), warm_up=True)
+    for epoch in range(init_epoch, init_epoch + 100, 1):
+        train_one_epoch(model, epoch, train_dataloader, optimizer, device=device, warm_up=True)
         lr_scheduler.step()
         if epoch > 15 and epoch % 4 == 0:
-            evaluate(model, val_dataloader)
+            evaluate(model, val_dataloader, device)

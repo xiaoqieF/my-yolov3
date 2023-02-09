@@ -86,11 +86,11 @@ class ToTensor(object):
 class DefaultAug(ImgAug):
     def __init__(self, ):
         self.augmentations = iaa.Sequential([
-            iaa.Dropout([0.0, 0.01]),
+            iaa.Dropout([0.01, 0.1]),
             iaa.Sharpen((0.0, 0.1)),
-            iaa.Affine(rotate=(-10, 10), translate_percent=(-0.1, 0.1), scale=(0.8, 1.5)),
+            iaa.Affine(rotate=(-20, 20), translate_percent=(-0.1, 0.1), scale=(0.8, 1.5)),
             iaa.AddToBrightness((-60, 40)),
-            iaa.AddToHue((-20, 20)),
+            iaa.AddToHue((-60, 60)),
             iaa.Fliplr(0.5),
         ])
 

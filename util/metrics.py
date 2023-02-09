@@ -16,7 +16,7 @@ def print_eval_stats(ap, ap_class, class_names):
     print(f"---- mAP {ap50.mean():.5f} ----")
 
 def get_batch_statistics(outputs, targets):
-    iouv = torch.linspace(0.5, 0.95, 10)
+    iouv = torch.linspace(0.5, 0.95, 10)  # iou 从 0.5 至 0.95 取 10 个点
     niou = iouv.numel()
 
     stats = []
@@ -30,6 +30,8 @@ def get_batch_statistics(outputs, targets):
             if nl:
                 stats.append((torch.zeros(0, niou, dtype=torch.bool), torch.Tensor(), torch.Tensor(), tcls))
             continue
+        # shape: [N, 10]
+        # [True, True, False, ..., False] 说明该预测在 iou=0.5 和 0.55 是 True Positive
         correct = torch.zeros(pred.shape[0], niou, dtype=torch.bool)
         if nl:
             detected = []
