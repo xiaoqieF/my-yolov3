@@ -6,7 +6,7 @@ from util.hyp import HYP
 import torch
 from torch.utils.data import DataLoader
 from util.transform import DEFAULT_TRANSFORMS, VAL_TRANSFORMS
-from util.draw_boxes_utils import draw_objs, draw_box
+from util.draw_boxes_utils import draw_box
 import torchvision
 import matplotlib.pyplot as plt
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     model.eval()
 
     data = YoloDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
-    dataloader = DataLoader(data, 1, False, num_workers=4, collate_fn=data.collate_fn)
+    dataloader = DataLoader(data, 1, True, num_workers=4, collate_fn=data.collate_fn)
     decoder = BoxDecoder()
     class_names = load_class_names("./my_yolo_dataset/my_data_label.names")
 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
             
             outputs = model(imgs)
             outputs = decoder.decode(outputs)
-            predictions = non_max_suppression(outputs, 0.5)[0]
+            predictions = non_max_suppression(outputs, 0.2)[0]
             predictions = predictions.cpu()
             print(f"predictions: {predictions}")
             print(f"targets: {targets}")

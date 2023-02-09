@@ -1,5 +1,5 @@
 *.pth
 my_yolo_dataset/
-data/
+data/VOCdevkit
 __pycache__
 run/
